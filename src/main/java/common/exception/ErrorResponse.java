@@ -1,4 +1,4 @@
-package autorpg.exception;
+package common.exception;
 
 import java.time.LocalDateTime;
 

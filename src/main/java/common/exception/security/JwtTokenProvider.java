@@ -1,4 +1,4 @@
-package autorpg.security;
+package common.exception.security;
 
 import java.security.Key;
 import java.util.Arrays;

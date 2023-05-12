@@ -1,4 +1,4 @@
-package autorpg.security;
+package common.exception.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

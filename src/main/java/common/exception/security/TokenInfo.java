@@ -1,4 +1,4 @@
-package autorpg.security;
+package common.exception.security;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

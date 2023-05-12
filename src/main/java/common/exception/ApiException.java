@@ -1,4 +1,4 @@
-package autorpg.exception;
+package common.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

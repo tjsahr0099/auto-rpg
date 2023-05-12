@@ -1,4 +1,4 @@
-package autorpg.security;
+package common.exception.security;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;

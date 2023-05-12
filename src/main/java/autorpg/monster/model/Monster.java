@@ -1,15 +1,13 @@
 package autorpg.monster.model;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class Monster {
 
-    private int minAtk;
-    private int maxAtk;
-    private int def;
-    private int maxHp;
     private int hp;
-    private int level;
+    private int turnCnt;
     private MonsterInfo info;
 }

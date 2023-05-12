@@ -1,4 +1,4 @@
-package autorpg.security;
+package common.exception.security;
 
 import org.apache.commons.text.StringEscapeUtils;
 

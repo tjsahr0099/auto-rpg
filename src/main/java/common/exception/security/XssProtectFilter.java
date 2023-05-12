@@ -1,4 +1,4 @@
-package autorpg.security;
+package common.exception.security;
 
 import java.io.IOException;
 import java.util.HashMap;
