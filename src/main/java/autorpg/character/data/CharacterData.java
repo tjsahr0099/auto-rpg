@@ -11,6 +11,8 @@ public class CharacterData {
                 .maxAtk(5)
                 .minAtk(1)
                 .spd(5)
+                .criChance(10)
+                .criMultiplier(200)
                 .hp(100)
                 .turnCnt(0)
                 .level(1).build();

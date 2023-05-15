@@ -14,4 +14,5 @@ public class MonsterInfo {
     private int maxHp;
     private int level;
     private int spd;
+    private int gainExp;
 }

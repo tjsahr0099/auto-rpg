@@ -1,5 +1,6 @@
 package autorpg.battle.service;
 
+import autorpg.battle.model.BattleState;
 import autorpg.character.data.CharacterData;
 import autorpg.character.model.Character;
 import autorpg.monster.data.MonsterData;
@@ -21,61 +22,139 @@ public class BattleService {
     public void startBattle(Character character, Monster monster){
 
         int turnCnt = 0;
+        BattleState battleState = BattleState.builder().isBattleEnd(false).isCharacterWin(false).build();
 
-        while(checkBattleEnd(character,monster)){
+        while(!battleState.isBattleEnd()){
             turnCnt++;
             log.info("==============================================");
+            
+            // 레디페이즈
             log.info("{} 번째 턴",turnCnt);
-            turn(character, monster);
+            
+            // 배틀페이즈
+            turn(character, monster, battleState);
+            log.info("종료판별중 ....isEnd={} [{}] ",battleState.isBattleEnd() , battleState.isBattleEnd() ? "전투종료!!" : "계속진행" );
+
+            // 엔드페이즈
+            if(battleState.isBattleEnd()){
+                if(battleState.isCharacterWin()){
+                    log.debug("플레이어 승리!");
+                    log.debug("경험치 {} 획득", monster.getInfo().getGainExp());
+                    character.setExp(character.getExp()+monster.getInfo().getGainExp());
+                }else{
+                    log.debug("플레이어 패배...");
+                }
+            }
+
             log.info("==============================================");
         }
 
 
     }
 
-    private boolean checkBattleEnd(Character character, Monster monster){
+    /**
+     * 턴 종료 여부 체크
+     * @param character
+     * @param monster
+     * @return
+     */
+    private boolean checkBattleEnd(Character character, Monster monster, BattleState battleState){
 
         if(character.getHp()<=0){
-            log.info("플레이어 패배");
-            log.info("플레이어[{}/{}]",character.getHp(),character.getMaxHp());
-            log.info("몬스터[{}/{}]",monster.getHp(),monster.getInfo().getMaxHp());
-            return false;
+            battleState.setBattleEnd(true);
+            battleState.setCharacterWin(false);
+            // 전투종료
+            return true;
         }
         if(monster.getHp()<=0){
-            log.info("플레이어 승리");
-            log.info("플레이어[{}/{}]",character.getHp(),character.getMaxHp());
-            log.info("몬스터[{}/{}]",monster.getHp(),monster.getInfo().getMaxHp());
-            return false;
+            battleState.setBattleEnd(true);
+            battleState.setCharacterWin(true);
+            // 전투종료
+            return true;
         }
-
-        return true;
+        
+        // 종료 아님
+        return false;
     }
 
-    private void turn(Character character, Monster monster){
+    /**
+     * 턴 진행
+     * @param character
+     * @param monster
+     * @return
+     */
+    private void turn(Character character, Monster monster, BattleState battleState){
 
         int damage = 0;
         log.info("턴 카운트 플레이어[{}] 몬스터[{}]",character.getTurnCnt(),monster.getTurnCnt());
+        // 이번 턴 스피드 계산
+        int thisTurnCharacterSpeed = character.getSpd()*(monster.getTurnCnt()+1);
+        int thisTurnMonsterSpeed = monster.getInfo().getSpd()*(character.getTurnCnt()+1);
+
         // 턴 결정
-        if(character.getSpd()*(monster.getTurnCnt()+1) >= monster.getInfo().getSpd()*(character.getTurnCnt()+1)){
-            log.info("플레이어 턴 , 플레이어 SPD[{}] 몬스터 SPD[{}]",character.getSpd()*(monster.getTurnCnt()+1),monster.getInfo().getSpd()*(character.getTurnCnt()+1));
+        boolean isCharacterTurn = thisTurnCharacterSpeed >= thisTurnMonsterSpeed;
+
+        if(isCharacterTurn){
+
+            // 케릭터 턴
             character.setTurnCnt(character.getTurnCnt()+1);
-            damage = getDamage(character.getMinAtk(), character.getMaxAtk());
-            log.info("플레이어 타격! , 몬스터 HIT DAMAGE[{}]",damage);
+            damage = getCharacterDamage(character);
             monster.setHp(monster.getHp()-damage);
+
+            log.info("플레이어 턴 , 플레이어 SPD[{}] 몬스터 SPD[{}]",thisTurnCharacterSpeed,thisTurnMonsterSpeed);
+            log.info("플레이어가 공격합니다! , 몬스터는 {}의 데미지를 입었습니다.",damage);
+
         }else{
-            log.info("몬스터 턴 , 플레이어 SPD[{}] 몬스터 SPD[{}]",character.getSpd()*(monster.getTurnCnt()+1),monster.getInfo().getSpd()*(character.getTurnCnt()+1));
+
+            // 몬스터 턴
             monster.setTurnCnt(monster.getTurnCnt()+1);
-            damage = getDamage(monster.getInfo().getMinAtk(), monster.getInfo().getMaxAtk());
-            log.info("몬스터 타격! , 플레이어 HIT DAMAGE[{}]",damage);
+            damage = getMonsterDamage(monster);
             character.setHp(character.getHp()-damage);
+
+            log.info("몬스터 턴 , 플레이어 SPD[{}] 몬스터 SPD[{}]",thisTurnCharacterSpeed,thisTurnCharacterSpeed);
+            log.info("몬스터가 공격합니다! , 플레이어는 {}의 데미지를 입었습니다.",damage);
+
         }
 
+        log.info("몬스터\tHP[{}/{}]",monster.getHp(),monster.getInfo().getMaxHp());
+        log.info("플레이어\tHP[{}/{}]",character.getHp(),character.getMaxHp());
+
+        checkBattleEnd(character,monster,battleState);
     }
 
-    private int getDamage(int minAtk, int maxAtk){
+    /**
+     * 케릭터 데미지 계산
+     * @param character
+     * @return
+     */
+    private int getCharacterDamage(Character character){
         Random random = new Random();
-        int damage = 1 + random.nextInt(minAtk, maxAtk);
+
+        // 최소 / 최대 데미지 계산
+        int damage = 1 + random.nextInt(character.getMinAtk(), character.getMaxAtk());
+
+        // 크리티컬 데미지 계산
+        int criDice = random.nextInt(1, 1000);
+        if(criDice < 1000*((float)character.getCriChance()/100)){
+            log.info("크리티컬 히트!");
+            damage = damage*(character.getCriMultiplier()/100);
+        }
+//        log.info("크리티컬 히트 안뜸 {} : {} " , criDice, 1000*((float)character.getCriChance()/100));
+
         return damage;
     }
+
+    /**
+     * 몬스터 데미지 계산
+     * @param monster
+     * @return
+     */
+    private int getMonsterDamage(Monster monster){
+        Random random = new Random();
+        int damage = 1 + random.nextInt(monster.getInfo().getMinAtk(), monster.getInfo().getMaxAtk());
+        return damage;
+    }
+
+
 
 }

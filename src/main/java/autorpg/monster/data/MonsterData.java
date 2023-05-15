@@ -17,6 +17,7 @@ public class MonsterData {
                         .minAtk(1)
                         .spd(4)
                         .maxHp(50)
+                        .gainExp(10)
                         .build()
                 ).build();
     }

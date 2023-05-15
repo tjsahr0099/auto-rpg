@@ -17,6 +17,8 @@ public class Character {
     private int level;
     private int exp;
     private int spd;
+    private int criChance;
+    private int criMultiplier;
 
     // battle info
     private int turnCnt;
