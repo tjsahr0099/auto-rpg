@@ -1,13 +1,16 @@
 package autorpg.monster.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
-@Builder
-public class Monster {
+@SuperBuilder
+public class Monster extends MonsterInfo {
 
+    private String instanseId;
     private int hp;
     private int turnCnt;
-    private MonsterInfo info;
 }
