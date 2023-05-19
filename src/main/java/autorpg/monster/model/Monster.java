@@ -10,7 +10,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class Monster extends MonsterInfo {
 
-    private String instanseId;
+    private String instId;
     private int hp;
     private int turnCnt;
 }

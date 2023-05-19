@@ -1,8 +1,12 @@
 package autorpg.character.model;
 
+import autorpg.item.model.Item;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -23,5 +27,7 @@ public class Character {
     // battle info
     private int turnCnt;
     private int hp;
+
+    private List<Item> inventory = new ArrayList<>();
 
 }

@@ -21,4 +21,6 @@ public class MonsterInfo {
     private int level;
     private int spd;
     private int gainExp;
+    private DropItem[] dropTable;
+
 }

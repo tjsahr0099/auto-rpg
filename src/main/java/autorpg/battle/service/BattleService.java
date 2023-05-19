@@ -3,17 +3,27 @@ package autorpg.battle.service;
 import autorpg.battle.model.BattleState;
 import autorpg.character.data.CharacterData;
 import autorpg.character.model.Character;
+import autorpg.item.ItemService;
+import autorpg.item.model.Item;
+import autorpg.item.model.ItemInfo;
 import autorpg.monster.data.MonsterData;
+import autorpg.monster.model.DropItem;
 import autorpg.monster.model.Monster;
 import common.util.Fibonacci;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 @Service
 @Slf4j
 public class BattleService {
+
+//    @Autowired
+    ItemService itemService = new ItemService();
 
     public static void main(String[] args) {
 
@@ -41,8 +51,7 @@ public class BattleService {
             if(battleState.isBattleEnd()){
                 if(battleState.isCharacterWin()){
                     log.debug("플레이어 승리!");
-                    log.debug("경험치 {} 획득", monster.getGainExp());
-                    character.setExp(character.getExp()+monster.getGainExp());
+                    getReward(character,monster);
                 }else{
                     log.debug("플레이어 패배...");
                 }
@@ -138,8 +147,7 @@ public class BattleService {
         int damage = 1 + random.nextInt(character.getMinAtk(), character.getMaxAtk());
 
         // 크리티컬 데미지 계산
-        int criDice = random.nextInt(1, 1000);
-        if(criDice < 1000*((float)character.getCriChance()/100)){
+        if(runDice(character.getCriChance())){
             log.info("크리티컬 히트!");
             damage = damage*(character.getCriMultiplier()/100);
         }
@@ -162,7 +170,7 @@ public class BattleService {
 
     private int reduceDamage(Integer def,Integer damage){
 
-        // 몬스터 방어력 계산
+        // 방어력 계산
         Integer[] defenceLevelChart = Fibonacci.getFibonacci();
         Integer defenceLevel = 0;
         for(int i=0;i<Fibonacci.maxLength;i++){
@@ -179,8 +187,57 @@ public class BattleService {
         return damage;
     }
 
+    /**
+     * 보상 계산
+     * @param character
+     * @param monster
+     */
+    private void getReward(Character character, Monster monster){
 
+        log.debug("경험치 {} 획득", monster.getGainExp());
+        character.setExp(character.getExp()+monster.getGainExp());
 
+        for(DropItem dropItem : monster.getDropTable()){
+            if(runDice(dropItem.getDropPercentage())){
+                log.debug("아이템 획득! {} " , dropItem.getItemId());
+                List<Item> inventory = character.getInventory();
+                if(inventory==null){
+                    inventory = new ArrayList<>();
+                }
+                inventory.add(createItem(dropItem.getItemId()));
+                character.setInventory(inventory);
+            }
+        }
+
+        log.debug("인벤토리 : {} " , character.getInventory()==null?null:character.getInventory().toString());
+
+    }
+
+    /**
+     * 확률 결과 계산
+     * @param percent
+     * @return
+     */
+    private boolean runDice(int percent){
+        Random random = new Random();
+        int dice = random.nextInt(1, 1000);
+        if(dice < 1000*((float)percent/100)){
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 아이템 생성
+     * @param itemId
+     * @return
+     */
+    private Item createItem(String itemId){
+        return Item.builder()
+                .instId("I00000001")
+                .info(itemService.getItem(itemId))
+                .build();
+    }
 
 
 }
